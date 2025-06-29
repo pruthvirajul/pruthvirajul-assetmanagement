@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: leave-postgres
+    environment:
+      POSTGRES_DB: asset_management
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin321
+    ports:
+      - "8301:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  backend:
+    build: ./Backend
+    container_name: asset-backend
+    ports:
+      - "3102:3102"
+    depends_on:
+      - postgres
+    environment:
+      - PGHOST=postgres
+      - PGUSER=postgres
+      - PGPASSWORD=admin321
+      - PGDATABASE=asset_management
+      - PGPORT=5432
+    volumes:
+      - ./Backend:/app
+    working_dir: /app
+    command: node server.js
+
+  frontend:
+    build: ./Frontend
+    container_name: asset-frontend
+    ports:
+      - "6183:80"
+
+  hr:
+    build: ./HR
+    container_name: asset-hr
+    ports:
+      - "6184:80"
+
+volumes:
+  pgdata:
+
